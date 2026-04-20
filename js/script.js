@@ -226,8 +226,8 @@ const initJumpButtonToggle = () => {
 	if (!('IntersectionObserver' in window)) {
 		window.addEventListener('scroll', () => {
 			const rect = finalSection.getBoundingClientRect();
-			const isVisible = rect.top < window.innerHeight * 0.5 && rect.bottom > window.innerHeight * 0.5;
-			if (isVisible) {
+			const hasReachedFinal = rect.top <= window.innerHeight * 0.5;
+			if (hasReachedFinal) {
 				setToTop();
 			} else {
 				setToFinal();
@@ -238,7 +238,8 @@ const initJumpButtonToggle = () => {
 
 	const jumpObserver = new IntersectionObserver((entries) => {
 		entries.forEach((entry) => {
-			if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
+			const hasReachedFinal = entry.boundingClientRect.top <= window.innerHeight * 0.5;
+			if (hasReachedFinal) {
 				setToTop();
 			} else {
 				setToFinal();
