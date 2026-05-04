@@ -1784,15 +1784,15 @@ body.is-modal-open {
     }
 }
 
-.projectRecources iframe {
+.projectResources iframe {
     padding-bottom: 96px;
 }
 
-.projectRecources p {
+.projectResources p {
     width: 512px;
 }
 
-.projectRecources h5 {
+.projectResources h5 {
     margin-bottom: 16px;
 }
 

@@ -216,6 +216,17 @@ const initJumpButtonToggle = () => {
 		jumpLink.setAttribute('href', '#');
 	};
 
+	const updateJumpButton = () => {
+		const rect = finalSection.getBoundingClientRect();
+		const shouldGoTop = rect.top <= window.innerHeight;
+
+		if (shouldGoTop) {
+			setToTop();
+		} else {
+			setToFinal();
+		}
+	};
+
 	jumpLink.addEventListener('click', (event) => {
 		if (jumpLink.getAttribute('href') === '#') {
 			event.preventDefault();
@@ -223,33 +234,18 @@ const initJumpButtonToggle = () => {
 		}
 	});
 
-	if (!('IntersectionObserver' in window)) {
-		window.addEventListener('scroll', () => {
-			const rect = finalSection.getBoundingClientRect();
-			const hasReachedFinal = rect.top <= window.innerHeight * 0.5;
-			if (hasReachedFinal) {
-				setToTop();
-			} else {
-				setToFinal();
-			}
-		}, { passive: true });
-		return;
-	}
-
-	const jumpObserver = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
-			const hasReachedFinal = entry.boundingClientRect.top <= window.innerHeight * 0.5;
-			if (hasReachedFinal) {
-				setToTop();
-			} else {
-				setToFinal();
-			}
+	let jumpRafId = null;
+	const scheduleJumpUpdate = () => {
+		if (jumpRafId !== null) return;
+		jumpRafId = window.requestAnimationFrame(() => {
+			jumpRafId = null;
+			updateJumpButton();
 		});
-	}, {
-		threshold: [0, 0.45, 1]
-	});
+	};
 
-	jumpObserver.observe(finalSection);
+	window.addEventListener('scroll', scheduleJumpUpdate, { passive: true });
+	window.addEventListener('resize', scheduleJumpUpdate);
+	updateJumpButton();
 };
 
 initNavScrollBehavior();
@@ -671,6 +667,7 @@ const initProjectFinalVideo = () => {
 
 	const playedSet = new WeakSet();
 	let currentlyPlaying = null;
+	const userToggleTimes = new WeakMap();
 
 	const updatePausedState = (video) => {
 		const hasPlayed = playedSet.has(video);
@@ -710,6 +707,8 @@ const initProjectFinalVideo = () => {
 		});
 
 		video.addEventListener('click', () => {
+			// record manual user toggle to prevent immediate autoplay override
+			try { userToggleTimes.set(video, Date.now()); } catch (e) {}
 			if (video.paused) {
 				pauseAllExcept(video);
 				video.play().catch(() => {});
@@ -724,15 +723,19 @@ const initProjectFinalVideo = () => {
 	const observer = new IntersectionObserver((entries) => {
 		entries.forEach((entry) => {
 			const v = entry.target;
-			if (entry.isIntersecting && entry.intersectionRatio >= 0.99) {
+			const lastToggle = userToggleTimes.get(v);
+			const recentlyToggled = lastToggle && (Date.now() - lastToggle) < 1500;
+			if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+				// Respect recent user interaction to avoid toggling against intent
+				if (recentlyToggled) return;
 				// Pause others before autoplaying this one
 				pauseAllExcept(v);
 				v.play().catch(() => {});
 			} else {
-				v.pause();
+				if (!recentlyToggled) v.pause();
 			}
 		});
-	}, { threshold: [0, 0.99, 1] });
+	}, { threshold: [0, 0.6, 0.99, 1] });
 
 	videos.forEach((v) => observer.observe(v));
 };
