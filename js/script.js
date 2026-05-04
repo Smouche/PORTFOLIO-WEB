@@ -485,6 +485,96 @@ const initArchiveModal = () => {
 initArchivePanPreview();
 initArchiveModal();
 
+const initFinalImageModal = () => {
+	const finalThumbs = Array.from(document.querySelectorAll('.projectFinalGrid .finalThumb'));
+	const finalModal = document.getElementById('finalModal');
+	const finalModalViewport = document.getElementById('finalModalViewport');
+	const finalModalImage = document.getElementById('finalModalImage');
+	const finalModalClose = document.getElementById('finalModalClose');
+	const finalModalPrev = document.getElementById('finalModalPrev');
+	const finalModalNext = document.getElementById('finalModalNext');
+	const finalModalCounter = document.getElementById('finalModalCounter');
+
+	if (finalThumbs.length === 0 || !finalModal || !finalModalViewport || !finalModalImage || !finalModalClose || !finalModalPrev || !finalModalNext || !finalModalCounter) return;
+
+	const finalItems = finalThumbs.map((thumb, index) => {
+		const image = thumb.querySelector('img');
+		return {
+			thumb,
+			image,
+			source: image?.currentSrc || image?.src || '',
+			alt: image?.alt || `Final design image ${index + 1}`
+		};
+	}).filter((item) => Boolean(item.image));
+
+	let currentIndex = 0;
+
+	const updateCounter = () => {
+		finalModalCounter.textContent = `${currentIndex + 1} / ${finalItems.length}`;
+	};
+
+	const showItem = (index) => {
+		currentIndex = (index + finalItems.length) % finalItems.length;
+		const item = finalItems[currentIndex];
+		finalModalImage.src = item.source;
+		finalModalImage.alt = item.alt;
+		updateCounter();
+	};
+
+	const openModal = (index) => {
+		showItem(index);
+		finalModal.classList.add('is-open');
+		finalModal.setAttribute('aria-hidden', 'false');
+		document.body.classList.add('is-modal-open');
+	};
+
+	const closeModal = () => {
+		finalModal.classList.remove('is-open');
+		finalModal.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('is-modal-open');
+		finalModalImage.src = '';
+		finalModalImage.alt = '';
+	};
+
+	const goPrev = () => showItem(currentIndex - 1);
+	const goNext = () => showItem(currentIndex + 1);
+
+	finalThumbs.forEach((thumb) => {
+		thumb.addEventListener('click', () => {
+			const index = Number(thumb.dataset.finalIndex || 0);
+			openModal(index);
+		});
+	});
+
+	finalModalClose.addEventListener('click', closeModal);
+	finalModalPrev.addEventListener('click', goPrev);
+	finalModalNext.addEventListener('click', goNext);
+
+	finalModal.addEventListener('click', (event) => {
+		if (event.target === finalModal) {
+			closeModal();
+		}
+	});
+
+	finalModalViewport.addEventListener('click', (event) => {
+		event.stopPropagation();
+	});
+
+	window.addEventListener('keydown', (event) => {
+		if (!finalModal.classList.contains('is-open')) return;
+
+		if (event.key === 'Escape') {
+			closeModal();
+		} else if (event.key === 'ArrowLeft') {
+			goPrev();
+		} else if (event.key === 'ArrowRight') {
+			goNext();
+		}
+	});
+};
+
+initFinalImageModal();
+
 /* ========================================
    SKETCH IMAGE SCROLL ANIMATION
    ======================================== */
@@ -565,50 +655,75 @@ initInsightsAnimation();
  * Control final showcase video playback based on visibility and click interaction
  */
 const initProjectFinalVideo = () => {
-	const finalVideo = document.querySelector('.projectFinalVideo');
-	if (!finalVideo) return;
+	const finalGrid = document.querySelector('.projectFinalGrid');
+	if (!finalGrid) return;
 
-	let hasPlayed = false;
+	const videos = Array.from(finalGrid.querySelectorAll('video'));
+	if (videos.length === 0) return;
 
-	const syncPausedState = () => {
-		finalVideo.classList.toggle('is-paused', hasPlayed && finalVideo.paused);
+	const playedSet = new WeakSet();
+	let currentlyPlaying = null;
+
+	const updatePausedState = (video) => {
+		const hasPlayed = playedSet.has(video);
+		video.classList.toggle('is-paused', hasPlayed && video.paused);
 	};
 
-	finalVideo.controls = false;
-	finalVideo.loop = true;
-	finalVideo.playsInline = true;
-	finalVideo.setAttribute('playsinline', '');
-	syncPausedState();
+	const pauseAllExcept = (exceptVideo) => {
+		videos.forEach((v) => {
+			if (v !== exceptVideo) {
+				if (!v.paused) v.pause();
+			}
+		});
+	};
 
-	finalVideo.addEventListener('play', () => {
-		hasPlayed = true;
-		syncPausedState();
-	});
-	finalVideo.addEventListener('pause', syncPausedState);
+	videos.forEach((video) => {
+		video.controls = false;
+		video.loop = true;
+		video.playsInline = true;
+		video.setAttribute('playsinline', '');
 
-	finalVideo.addEventListener('click', () => {
-		if (finalVideo.paused) {
-			finalVideo.play().catch(() => {});
-		} else {
-			finalVideo.pause();
-		}
+		// Initialize paused visual state
+		updatePausedState(video);
+
+		video.addEventListener('play', () => {
+			playedSet.add(video);
+			currentlyPlaying = video;
+			pauseAllExcept(video);
+			updatePausedState(video);
+		});
+
+		video.addEventListener('pause', () => {
+			if (currentlyPlaying === video) currentlyPlaying = null;
+			updatePausedState(video);
+		});
+
+		video.addEventListener('click', () => {
+			if (video.paused) {
+				pauseAllExcept(video);
+				video.play().catch(() => {});
+			} else {
+				video.pause();
+			}
+		});
 	});
 
 	if (!('IntersectionObserver' in window)) return;
 
-	const videoObserver = new IntersectionObserver((entries) => {
+	const observer = new IntersectionObserver((entries) => {
 		entries.forEach((entry) => {
+			const v = entry.target;
 			if (entry.isIntersecting && entry.intersectionRatio >= 0.99) {
-				finalVideo.play().catch(() => {});
+				// Pause others before autoplaying this one
+				pauseAllExcept(v);
+				v.play().catch(() => {});
 			} else {
-				finalVideo.pause();
+				v.pause();
 			}
 		});
-	}, {
-		threshold: [0, 0.99, 1]
-	});
+	}, { threshold: [0, 0.99, 1] });
 
-	videoObserver.observe(finalVideo);
+	videos.forEach((v) => observer.observe(v));
 };
 
 initProjectFinalVideo();

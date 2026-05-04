@@ -214,12 +214,46 @@
                 The final outcome was a working prototype developed within a 10-week school project and presented during
                 our student expo.
             </p>
-            <video preload="metadata" class="projectFinalVideo" loop muted playsinline>
-                <source src="assets/img/finalTUM.mp4" type="video/x-matroska">
-                Your browser does not support the video tag.
-            </video>
+
+            <div class="projectFinalGrid">
+                <div class="finalA">
+                    <video preload="metadata" class="projectFinalVideo" loop playsinline>
+                        <source src="https://res.cloudinary.com/dfewxkke0/video/upload/v1777855193/finalTUM_owhh8n.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+                <div class="finalB finalThumb" data-final-index="0">
+                    <img src="assets/img/TUMpage1.png" alt="TUM page 1">
+                </div>
+
+                <div class="finalC finalThumb" data-final-index="1">
+                    <img src="assets/img/TUMpage2.png" alt="TUM page 2">
+                </div>
+
+                <div class="finalD finalThumb" data-final-index="2">
+                    <img src="assets/img/TUMpage3.png" alt="TUM page 3">
+                </div>
+
+                <div class="finalE">
+                    <img src="assets/img/mockUpTUM.PNG" alt="TUM mockup">
+                </div>
+            </div>
 
         </section>
+
+        <aside class="finalModal" id="finalModal" aria-hidden="true" role="dialog" aria-modal="true"
+            aria-label="Final design image viewer">
+            <button type="button" class="finalModalClose" id="finalModalClose" aria-label="Close image popup">×</button>
+            <button type="button" class="finalModalArrow finalModalArrowPrev" id="finalModalPrev"
+                aria-label="Previous image">←</button>
+            <div class="finalModalViewport" id="finalModalViewport">
+                <img src="" alt="" class="finalModalImage" id="finalModalImage">
+            </div>
+            <button type="button" class="finalModalArrow finalModalArrowNext" id="finalModalNext"
+                aria-label="Next image">→</button>
+            <div class="finalModalCounter" id="finalModalCounter" aria-hidden="true"></div>
+        </aside>
 
         <section class="projectRecources">
             <h5>RESOURCES</h5>

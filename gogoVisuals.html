@@ -145,12 +145,47 @@
                 I also created my own control panel with buttons and sliders to control the visuals during the live
                 performance.
             </p>
-            <video preload="metadata" class="projectFinalVideo" loop playsinline controls>
-                <source src="assets/img/finalGV.mov" type="video/quicktime">
-                Your browser does not support the video tag.
-            </video>
+
+            <div class="projectFinalGrid">
+                <div class="finalA">
+                    <!-- Use the page's existing final video as the large top media -->
+                    <video preload="metadata" class="projectFinalVideo" loop playsinline controls>
+                        <source src="https://res.cloudinary.com/dfewxkke0/video/upload/v1777856092/0504_klykgm.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+                <div class="finalB finalThumb" data-final-index="0">
+                    <img src="assets/img/GVpage1.png" alt="GV page 1">
+                </div>
+
+                <div class="finalC finalThumb" data-final-index="1">
+                    <img src="assets/img/GVpage2.png" alt="GV page 2">
+                </div>
+
+                <div class="finalD finalThumb" data-final-index="2">
+                    <img src="assets/img/GVpage3.png" alt="GV page 3">
+                </div>
+
+                <div class="finalE">
+                    <video preload="metadata" class="projectFinalVideo" loop playsinline>
+                        <source src="https://res.cloudinary.com/dfewxkke0/video/upload/v1777855491/performanceGV_ju1jvp.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
 
         </section>
+
+        <aside class="finalModal" id="finalModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Final design image viewer">
+            <button type="button" class="finalModalClose" id="finalModalClose" aria-label="Close image popup">×</button>
+            <button type="button" class="finalModalArrow finalModalArrowPrev" id="finalModalPrev" aria-label="Previous image">←</button>
+            <div class="finalModalViewport" id="finalModalViewport">
+                <img src="" alt="" class="finalModalImage" id="finalModalImage">
+            </div>
+            <button type="button" class="finalModalArrow finalModalArrowNext" id="finalModalNext" aria-label="Next image">→</button>
+            <div class="finalModalCounter" id="finalModalCounter" aria-hidden="true"></div>
+        </aside>
 
     </main>
 
